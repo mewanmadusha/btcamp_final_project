@@ -1,0 +1,448 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        .dashboard-container {
+    background-size: cover;
+    background-position: center;
+    transition: transform 0.5s ease;
+
+    /* Make sure the container fills the screen or adjust as needed */
+    min-height: 100vh;
+    width: 100%;
+}
+
+.dashboard-container:hover {
+    transform: scale(1); /* Slightly zoom in on hover */
+}
+
+        .analytics-widget {
+    background-color: #f8f9fa; /* Light background */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.widget-header h5 {
+    margin: 0;
+    color: #333;
+}
+
+.analytics-table {
+    margin-top: 15px;
+    background-color: #fff;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.analytics-table thead th {
+    background-color: #4e73df; /* A darker shade for headers */
+    color: #ffffff;
+}
+
+.analytics-table tr {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-table th, .analytics-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+    </style>
+</head>
+
+<body>
+<div class="dashboard-container">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="#">SnowFlake Interactive Dashboard</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav"
+            aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <!-- Navbar content here -->
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item">
+                    <a href="/logout" class="nav-link">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- Main Dashboard Content -->
+    <div class="container mt-4">
+        <!-- Cards for quick overview -->
+        <div class="row">
+            <div class="col-md-auto">
+                <div class="analytics-widget">
+                    <div class="widget-header">
+                        <h5>Datawarehouse Account Status</h5>
+                    </div>
+                    <div class="widget-body">
+                        <table class="table analytics-table">
+                            <thead>
+                                <tr>
+                                    <th>Dataset Name</th>
+                                    <!-- Add more headers if necessary -->
+                                </tr>
+                            </thead>
+                            <tbody id="warehousesTableBody">
+                                <!-- Data rows will be inserted here by the script -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <h1>Task 4. API Development with Python:</h1>
+                <p>Interact with the NoSQL database for relevant additional data or metadata.</p>
+                <p>Dynamically select db and use SQL queries to get data</p>
+            </div>
+        </div>
+        <form id="queryForm">
+            <div class="form-group">
+                <label for="warehouseSelect">Select Warehouse</label>
+                <select id="warehouseSelect" class="form-control">
+                    <option>COVID19_EPIDEMIOLOGICAL_DATA</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="schemaSelect">Select Schema</label>
+                <select id="schemaSelect" class="form-control">
+                    <option>PUBLIC</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="sqlQuery">SQL Query</label>
+                <textarea id="sqlQuery" class="form-control" rows="4" placeholder="Enter SQL query here"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Run Query</button>
+        </form>
+
+
+        <div id="queryResult">
+            <!-- Query results will be displayed here -->
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <h1>Task 5. Interactive Visualization with Python:</h1>
+                <p>Dynamically select table and headers and then visualize data</p>
+                <p>select any table | First column shout be literal | Second column should be numerical</p>
+            </div>
+        </div>
+        <div class="row mb-3">
+            <div class="col-md-4">
+                <label for="table-select">Select a Table</label>
+                <select id="table-select" class="form-control" onchange="loadHeaders(); loadHeaders2();">
+                    <option>Select a table</option>
+                    <!-- Tables will be loaded here -->
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="header-select1">Select First Header</label>
+                <select id="header-select1" class="form-control">
+                    <option>Select a header</option>
+                    <!-- Headers will be loaded here based on the selected table -->
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="header-select2">Select Second Header</label>
+                <select id="header-select2" class="form-control">
+                    <option>Select a header</option>
+                    <!-- Headers will be loaded here based on the selected table -->
+                </select>
+            </div>
+        </div>
+
+        <button class="btn btn-primary mb-4" id="visualize-button" onclick="fetchAndDisplayData()">
+            Visualize
+            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true" id="button-spinner"
+                style="display: none;"></span>
+        </button>
+
+        <div id="plot"></div>
+
+        <div class="mt-3">
+            <h3>Previous Comments for Same Table Structure Selection</h3>
+            <div id="comments-section">
+                <!-- Dynamic comments will be loaded here into individual cards -->
+            </div>
+        </div>
+
+        <!-- Comment Form Section -->
+        <div id="comment-form" class="card mt-4" style="display:none;">
+            <div class="card-header">
+                Leave a Comment Regarding This Plot
+            </div>
+            <div class="card-body">
+                <form action="/save-comment" method="post">
+                    <div class="form-group">
+                        <label for="comment">Comment:</label>
+                        <textarea id="comment" name="comment" class="form-control"></textarea>
+                    </div>
+                    <input type="hidden" id="selected_table" name="selected_table">
+                    <input type="hidden" id="header1" name="header1">
+                    <input type="hidden" id="header2" name="header2">
+                    <button type="submit" class="btn btn-primary">Submit Comment</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+    </div>
+    </div>
+</div>
+    <!-- Bootstrap JS and its dependencies -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // here enable the data persistance using store usually using data into session storage
+            let warehousesData = sessionStorage.getItem('warehousesData');
+
+            if (!warehousesData) {
+                fetch('/data-warehouses')
+                    .then(response => response.json())
+                    .then(data => {
+                        sessionStorage.setItem('warehousesData', JSON.stringify(data));
+                        populateTable(data);
+                    })
+                    .catch(error => {
+                        console.error('Error fetching data: ', error);
+                    });
+            } else {
+                populateTable(JSON.parse(warehousesData));
+            }
+
+            fetch('/get-tables')
+                .then(response => response.json())
+                .then(data => {
+                    const tableSelect = document.getElementById('table-select');
+                    data.forEach(function (table) {
+                        let option = document.createElement('option');
+                        option.text = table;
+                        option.value = table;
+                        tableSelect.add(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+
+        });
+
+
+        function populateTable(data) {
+            let warehousesTable = document.getElementById('warehousesTableBody');
+            data.databases.forEach(database => {
+                let tr = document.createElement('tr');
+                let td = document.createElement('td');
+                td.textContent = database;
+                tr.appendChild(td);
+                warehousesTable.appendChild(tr);
+            });
+        }
+
+        function loadHeaders() {
+            const selectedTable = document.getElementById('table-select').value;
+            const headerSelect = document.getElementById('header-select1');
+            headerSelect.innerHTML = '<option>Select a header</option>'; // Reset headers dropdown
+
+            fetch('/get-headers/' + selectedTable)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(function (header) {
+                        let option = document.createElement('option');
+                        option.text = header;
+                        option.value = header;
+                        headerSelect.add(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+        function loadHeaders2() {
+            const selectedTable = document.getElementById('table-select').value;
+            const headerSelect = document.getElementById('header-select2');
+            headerSelect.innerHTML = '<option>Select a header2</option>'; // Reset headers dropdown
+
+            fetch('/get-headers/' + selectedTable)
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(function (header) {
+                        let option = document.createElement('option');
+                        option.text = header;
+                        option.value = header;
+                        headerSelect.add(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function fetchAndDisplayData() {
+
+            const visualizeButton = document.getElementById('visualize-button');
+            const buttonSpinner = document.getElementById('button-spinner');
+
+            visualizeButton.innerHTML = 'Loading...';
+            buttonSpinner.style.display = 'inline-block';
+
+            var table = document.getElementById('table-select').value;
+            var column1 = document.getElementById('header-select1').value;
+            var column2 = document.getElementById('header-select2').value;
+
+            fetch('/visualize', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ table_name: table, column_name1: column1, column_name2: column2 }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Use Plotly to plot the data
+                    var trace = {
+                        x: data.map(item => item.column1),
+                        y: data.map(item => item.column2),
+                        type: 'bar'
+                    };
+                    var layout = {
+                        title: 'Data Visualization',
+                        xaxis: { title: column1 },
+                        yaxis: { title: column2 },
+                    };
+                    Plotly.newPlot('plot', [trace], layout);
+                    document.getElementById('comment-form').style.display = 'block';
+                    var tableval = document.getElementById('table-select').value;
+                    console.log(tableval);
+                    document.getElementById('selected_table').value = tableval;
+                    document.getElementById('header1').value = column1;
+                    document.getElementById('header2').value = column2;
+                    visualizeButton.innerHTML = 'Visualize';
+                    buttonSpinner.style.display = 'none';
+
+                    loadComments();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    // Hide the spinner even if there's an error
+                    visualizeButton.innerHTML = 'Visualize';
+                    buttonSpinner.style.display = 'none';
+                });
+        }
+    </script>
+    <script>
+        document.getElementById('queryForm').addEventListener('submit', function (event) {
+            event.preventDefault();
+
+            const warehouse = document.getElementById('warehouseSelect').value;
+            const schema = document.getElementById('schemaSelect').value;
+            const sqlQuery = document.getElementById('sqlQuery').value;
+
+            // Make an AJAX request to your Flask server
+            fetch('/execute-query', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ warehouse, schema, sqlQuery })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Display results in a table
+                    displayResults(data);
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        function displayResults(data) {
+            const resultDiv = document.getElementById('queryResult');
+            resultDiv.innerHTML = ''; // Clear previous results
+
+            if (data.length === 0) {
+                resultDiv.innerHTML = '<p>No data to display.</p>';
+                return;
+            }
+
+            // Create a container div for the table
+            const tableContainer = document.createElement('div');
+            tableContainer.style.maxHeight = '400px'; // Maximum container height
+            tableContainer.style.overflowY = 'auto'; // Vertical scrollbar
+            tableContainer.style.width = '100%'; // Full width
+
+            // Create a table
+            const table = document.createElement('table');
+            table.className = 'table table-bordered'; // Bootstrap class
+
+            // Create table header
+            const thead = document.createElement('thead');
+            const headerRow = document.createElement('tr');
+            Object.keys(data[0]).forEach(key => {
+                const th = document.createElement('th');
+                th.textContent = key;
+                headerRow.appendChild(th);
+            });
+            thead.appendChild(headerRow);
+            table.appendChild(thead);
+
+            // Create table body
+            const tbody = document.createElement('tbody');
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+                Object.values(row).forEach(value => {
+                    const td = document.createElement('td');
+                    td.textContent = value;
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+            table.appendChild(tbody);
+
+            // Append the table to the container, then the container to resultDiv
+            tableContainer.appendChild(table);
+            resultDiv.appendChild(tableContainer);
+        }
+        function loadComments() {
+
+            var tableName = document.getElementById('table-select').value;
+            var header1 = document.getElementById('header1').value;
+            var header2 = document.getElementById('header2').value;
+
+            fetch(`/get-comments?table_name=${tableName}&header1=${header1}&header2=${header2}`)
+                .then(response => response.json())
+                .then(comments => {
+                    var commentsDiv = document.getElementById('comments-section');
+                    commentsDiv.innerHTML = '';  // Clear previous comments
+
+                    comments.forEach(comment => {
+                        var commentCard = `
+                    <div class="card mt-2">
+                        <div class="card-body">
+                            <p class="card-text">${comment.comment}</p>
+                            <footer class="blockquote-footer">Commented on <cite title="Source Title">${new Date(comment.commented_at).toLocaleString()}</cite></footer>
+                        </div>
+                    </div>
+                `;
+                        commentsDiv.innerHTML += commentCard;
+                    });
+                });
+        }
+    </script>
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

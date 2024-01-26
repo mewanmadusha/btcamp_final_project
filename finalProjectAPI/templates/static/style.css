@@ -1,0 +1,36 @@
+.analytics-widget {
+    background-color: #f8f9fa; /* Light background */
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+.widget-header h5 {
+    margin: 0;
+    color: #333;
+}
+
+.analytics-table {
+    margin-top: 15px;
+    background-color: #fff;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+.analytics-table thead th {
+    background-color: #4e73df; /* A darker shade for headers */
+    color: #ffffff;
+}
+
+.analytics-table tr {
+    background-color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.analytics-table th, .analytics-table td {
+    padding: 8px 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
