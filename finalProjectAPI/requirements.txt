@@ -107,3 +107,4 @@ websocket-client==1.7.0
 Werkzeug==3.0.1
 plotly==5.18.0
 redis==5.0.1
+Flask-Caching==2.1.0
