@@ -1,0 +1,7 @@
+-- SHOW TABLES;
+
+SELECT *
+FROM OWID_VACCINATIONS
+LIMIT 10;
+
+-- show users;
